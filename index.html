@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Финансовый калькулятор</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/main.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="index-page">
+    <div class="mobile-header">
+        <button class="menu-btn" aria-label="Меню" onclick="toggleMenu()">
+            <span class="menu-icon"></span>
+        </button>
+        <img src="img/bird_logo.png" alt="Логотип" />
+        <span class="header-title">Пенсионный план</span>
+        <div class="dropdown-menu" id="dropdownMenu">
+            <a href="index.html">Ввод данных</a>
+            <a href="result.html">Результаты</a>
+        </div>
+    </div>
+    <div class="calculator">
+        <div class="intro-section">
+            <h2 class="intro-title">Планирование пенсионных накоплений</h2>
+            <p class="intro-description">
+                Добро пожаловать в инструмент для расчета пенсионного плана! Здесь вы можете рассчитать, сколько вам необходимо откладывать каждый месяц для обеспечения желаемого уровня дохода в пенсионном возрасте. Заполните форму ниже, указав вашу текущую финансовую ситуацию и пенсионные цели, и получите персонализированный план действий.
+            </p>
+        </div>
+        
+        <h1>Мой финансовый план</h1>
+        
+        <div class="sections-container">
+            <div class="section">
+                <h2>🏠 Текущее положение</h2>
+                <div class="input-group">
+                    <label for="age">Ваш возраст</label>
+                    <div class="input-description">Укажите ваш текущий полный возраст в годах</div>
+                    <input type="number" id="age" min="18" max="100" placeholder="Введите ваш возраст">
+                </div>
+                <div class="input-group">
+                    <label for="retirement-age">Желаемый возраст выхода на пенсию</label>
+                    <div class="input-description">Возраст, с которого вы планируете прекратить активную трудовую деятельность</div>
+                    <input type="number" id="retirement-age" min="45" max="100" placeholder="Возраст выхода на пенсию">
+                </div>
+                <div class="input-group">
+                    <label for="current-savings">Текущие накопления (₽)</label>
+                    <div class="input-description">Сумма ваших активов, которыми вы располагаете и не планируете тратить в ближайшее время</div>
+                    <input type="text" id="current-savings" placeholder="Ваши текущие накопления">
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>💸 Ежемесячные показатели</h2>
+                <div class="input-group">
+                    <label for="monthly-income">Ежемесячный доход (₽)</label>
+                    <div class="input-description">Ваша средняя сумма дохода в месяц после налогов</div>
+                    <input type="text" id="monthly-income" placeholder="Ваш месячный доход">
+                </div>
+                <div class="input-group">
+                    <label for="monthly-expenses">Ежемесячные расходы (₽)</label>
+                    <div class="input-description">Средняя сумма ваших обязательных расходов в месяц</div>
+                    <input type="text" id="monthly-expenses" placeholder="Ваши месячные расходы">
+                </div>
+                <div class="input-group">
+                    <label for="monthly-savings">Ежемесячные накопления (₽)</label>
+                    <div class="input-description">Сумма, которую вы планируете откладывать ежемесячно на инвестиции</div>
+                    <input type="text" id="monthly-savings" placeholder="Сколько планируете откладывать">
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="auto-calculate-savings" checked>
+                        <label for="auto-calculate-savings">Вычислять автоматически (доход минус расходы)</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>📈 Пенсионные цели</h2>
+                <div class="input-group">
+                    <label for="desired-retirement-income">Желаемый доход на пенсии (₽/мес)</label>
+                    <div class="input-description">Сумма, которую вы хотите получать ежемесячно после выхода на пенсию (в будущих ценах)</div>
+                    <input type="text" id="desired-retirement-income" placeholder="Желаемый пенсионный доход">
+                </div>
+                <div class="input-group">
+                    <label for="life-expectancy">Ожидаемая продолжительность жизни</label>
+                    <div class="input-description">Сколько лет вы ожидаете прожить (для расчета длительности выплат на пенсии)</div>
+                    <input type="number" id="life-expectancy" min="60" max="120" value="80">
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🎯 Финансовые цели</h2>
+                <div id="goals-container">
+                    <!-- Здесь будут отображаться добавленные цели -->
+                </div>
+                <div class="input-group">
+                    <label for="goal-name">Название цели</label>
+                    <div class="input-description">Краткое описание вашей финансовой цели (например, покупка квартиры, автомобиля, путешествие)</div>
+                    <input type="text" id="goal-name" placeholder="Например: Покупка квартиры">
+                </div>
+                <div class="input-group">
+                    <label for="goal-amount">Необходимая сумма (₽)</label>
+                    <div class="input-description">Сколько денег потребуется для достижения цели (в будущих ценах)</div>
+                    <input type="text" id="goal-amount" placeholder="Стоимость цели">
+                </div>
+                <div class="input-group">
+                    <label for="goal-year">Через сколько лет</label>
+                    <div class="input-description">Через сколько лет вы планируете реализовать эту цель</div>
+                    <input type="number" id="goal-year" min="1" max="50" placeholder="Год достижения цели">
+                </div>
+                <button onclick="addGoal()" style="background: var(--success-color);">Добавить цель</button>
+            </div>
+        </div>
+
+        <button onclick="saveAndGoToResult()">Рассчитать и показать результаты</button>
+
+        <div class="chart-scenario-block">
+            <div class="gauge-info-block" style="margin-bottom: 1rem;">
+                <div class="gauge-title" style="font-size: 1.25rem; font-weight: 600; color: rgb(13, 63, 74); margin-bottom: 0.3rem;">Шанс достижения цели</div>
+                <div class="gauge-desc" style="font-size: 1rem; color: #475569;">У вас получится профинансировать свою пенсию с заданными параметрами.</div>
+            </div>
+            <div class="chart-container">
+                <canvas id="chart"></canvas>
+            </div>
+            <div class="input-group">
+                <label for="scenario">Сценарий развития:</label>
+                <select id="scenario">
+                    <option value="optimistic">Оптимистичный</option>
+                    <option value="moderate" selected>Реалистичный</option>
+                    <option value="pessimistic">Пессимистичный</option>
+                </select>
+                <div class="input-description" id="scenario-desc"></div>
+            </div>
+        </div>
+
+        <div class="results">
+            <h2>📊 Результаты расчета</h2>
+            <div class="result-section">
+                <div class="result-item">
+                    <span class="result-label">Необходимая сумма к пенсии:</span>
+                    <div id="required-amount">-</div>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Прогнозируемые накопления к пенсии:</span>
+                    <div id="projected-amount">-</div>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Рекомендуемые ежемесячные инвестиции:</span>
+                    <div id="recommended-savings">-</div>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Ежемесячный дефицит/профицит:</span>
+                    <div id="monthly-gap">-</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="recommendations">
+            <h2>💡 Персональные рекомендации</h2>
+            <div class="recommendation-content" id="recommendations-container">
+                <p>Загрузка рекомендаций...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/header.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html> 

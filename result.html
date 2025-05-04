@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Результаты — Мой финансовый план</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/main.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <style>
+        /* Основные стили и переменные */
+        :root {
+            --primary-color: #10b981;
+            --primary-light: #34d399;
+            --secondary-color: #0ea5e9;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --text-primary: #1e293b;
+            --text-secondary: #475569;
+            --text-light: #94a3b8;
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 1rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            /* Стили для body теперь только в style.css */
+        }
+
+        .calculator {
+            background: var(--bg-secondary);
+            padding: 2.5rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: var(--text-primary);
+            font-size: 2.25rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 2.5rem;
+            position: relative;
+            display: none;
+        }
+
+        h2 {
+            color: rgb(13, 63, 74);
+            margin-bottom: 2.2rem;
+        }
+
+        .sections-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .section {
+            background: rgba(5, 173, 115, 0.08);
+            padding: 2rem;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+        }
+
+        .input-group {
+            margin-bottom: 2.2rem;
+            margin-top: 1.5rem;
+        }
+
+        .input-description {
+            font-size: 0.92rem;
+            color: var(--text-light);
+            margin-top: 0.2rem;
+            line-height: 1.4;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: rgb(13, 63, 74);
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            text-align: right;
+            font-family: 'Roboto Mono', monospace;
+            transition: all 0.2s;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: var(--primary-light);
+        }
+
+        .results {
+            margin-top: 3rem;
+            background: rgba(5, 173, 115, 0.08);
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+        }
+
+        .result-section {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .result-item {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            height: auto;
+        }
+
+        .result-header {
+            display: block;
+            margin-bottom: 1rem;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-value {
+            font-weight: 700;
+            color: var(--primary-color);
+            font-size: 1.25rem;
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        .present-value-note {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 115%;
+            max-width: 100%;
+            margin-top: 2rem;
+            background: white;
+            padding: 0;
+            border-radius: 0;
+            box-shadow: none;
+        }
+
+        .result-value-container {
+            margin-bottom: 0.75rem;
+        }
+
+        .result-explanation {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            line-height: 1.6;
+            margin-top: 0.5rem;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 0.5rem;
+        }
+
+        .recommendations {
+            margin-top: 3rem;
+            background: rgba(14, 165, 233, 0.08);
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+        }
+
+        .recommendation-content {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .recommendation-item {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            height: auto;
+        }
+        
+        .recommendation-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.8rem;
+            font-size: 1rem;
+            display: block;
+        }
+
+        .recommendation-text {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-size: 0.875rem;
+        }
+
+        .back-btn-container {
+            margin-top: 3rem;
+            padding: 2rem;
+            background: rgba(20, 184, 166, 0.08);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+        }
+
+        .dropdown-menu a {
+            text-align: left;
+        }
+
+        @media (max-width: 1024px) {
+            body {
+                /* Стили для body теперь только в style.css */
+            }
+
+            .calculator {
+                padding: 1.5rem;
+            }
+
+            .sections-container {
+                grid-template-columns: 1fr;
+            }
+
+            .result-section {
+                grid-template-columns: 1fr;
+            }
+
+            .recommendation-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.3rem;
+            }
+            h2 {
+                font-size: 1.05rem;
+            }
+            label {
+                font-size: 0.98rem;
+            }
+            .input-description {
+                font-size: 0.85rem;
+            }
+            input[type="text"],
+            input[type="number"],
+            select {
+                font-size: 0.98rem;
+                padding: 0.6rem 0.7rem;
+            }
+            .calculator {
+                padding: 0.7rem;
+            }
+            .section {
+                padding: 1rem;
+            }
+            .results {
+                padding: 1rem;
+                margin-top: 1.5rem;
+            }
+            .recommendations {
+                padding: 1rem;
+                margin-top: 1.5rem;
+            }
+            .back-btn-container {
+                padding: 1rem;
+                margin-top: 1.5rem;
+            }
+            .result-item, 
+            .recommendation-item {
+                padding: 1rem;
+            }
+            .result-section,
+            .recommendation-content {
+                gap: 1rem;
+            }
+            .result-label,
+            .recommendation-title {
+                font-size: 0.92rem;
+                margin-bottom: 0.4rem;
+            }
+            .result-value,
+            .recommendation-text {
+                font-size: 0.85rem;
+            }
+            .input-group {
+                margin-bottom: 1.1rem;
+            }
+            button {
+                padding: 0.7rem;
+                font-size: 0.98rem;
+            }
+            .chart-scenario-block {
+                padding: 0.35rem 0.35rem 0.25rem 0.35rem;
+            }
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin-top: 0.5rem;
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            width: auto;
+            margin-right: 0.5rem;
+        }
+
+        .checkbox-container label {
+            margin: 0;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        input:disabled {
+            background-color: #f1f5f9;
+            cursor: not-allowed;
+        }
+
+        .overview-title {
+            font-size: 34px;
+            font-weight: 500;
+            height: 51px;
+            line-height: 51px;
+            margin-bottom: 16px;
+            color: rgb(13, 63, 74);
+            text-align: left;
+        }
+        .chart-scenario-block {
+            background: var(--bg-secondary);
+            border: 1.5px solid #e2e8f0;
+            border-radius: 0;
+            margin-top: 1rem;
+            margin-bottom: 2.5rem;
+            padding: 1rem 1rem 0.75rem 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-header">
+        <button class="menu-btn" aria-label="Меню" onclick="toggleMenu()">
+            <span class="menu-icon"></span>
+        </button>
+        <img src="img/bird_logo.png" alt="Логотип" />
+        <span class="header-title">Пенсионный план</span>
+        <div class="dropdown-menu" id="dropdownMenu">
+            <a href="index.html">Ввод данных</a>
+            <a href="result.html">Результаты</a>
+        </div>
+    </div>
+    <div class="calculator">
+        <div class="overview-title">Обзор</div>
+        <div class="chart-scenario-block">
+            <div class="gauge-info-block" style="margin-bottom: 1rem;">
+                <div class="gauge-title" style="font-size: 1.25rem; font-weight: 600; color: rgb(13, 63, 74); margin-bottom: 0.3rem;">Шанс достижения цели</div>
+                <div class="gauge-desc" style="font-size: 1rem; color: #475569;">У вас получится профинансировать свою пенсию с заданными параметрами.</div>
+            </div>
+            <div class="chart-container">
+                <canvas id="chart"></canvas>
+            </div>
+            <div class="input-group">
+                <label for="scenario">Сценарий развития:</label>
+                <select id="scenario">
+                    <option value="optimistic">Оптимистичный</option>
+                    <option value="moderate" selected>Реалистичный</option>
+                    <option value="pessimistic">Пессимистичный</option>
+                </select>
+                <div class="input-description" id="scenario-desc"></div>
+            </div>
+        </div>
+        <div class="results">
+            <h2>📊 Результаты расчета</h2>
+            <div class="result-section">
+                <div class="result-item">
+                    <span class="result-label">Необходимая сумма к пенсии:</span>
+                    <div id="required-amount">-</div>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Прогнозируемые накопления к пенсии:</span>
+                    <div id="projected-amount">-</div>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Рекомендуемые ежемесячные инвестиции:</span>
+                    <div id="recommended-savings">-</div>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Ежемесячный дефицит/профицит:</span>
+                    <div id="monthly-gap">-</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="recommendations">
+            <h2>💡 Персональные рекомендации</h2>
+            <div class="recommendation-content" id="recommendations-container">
+                <p>Загрузка рекомендаций...</p>
+            </div>
+        </div>
+        
+        <div class="back-btn-container">
+            <button class="back-btn" onclick="goBack()">Назад к вводу параметров</button>
+        </div>
+    </div>
+    <script>
+        const SCENARIOS = {
+            optimistic: { name: 'Оптимистичный', returnRate: 0.15, inflationRate: 0.07 },
+            moderate:   { name: 'Средний', returnRate: 0.135, inflationRate: 0.08 },
+            pessimistic:{ name: 'Пессимистичный', returnRate: 0.08, inflationRate: 0.10 }
+        };
+        const RETIREMENT_RETURN = 0.07;
+        function getNumberFromFormattedString(str) {
+            if (str == null || str === '') return 0;
+            if (typeof str === 'number') return str;
+            return parseInt(str.toString().replace(/\D/g, '')) || 0;
+        }
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('ru-RU', {
+                style: 'currency',
+                currency: 'RUB',
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+        function formatCurrencyShort(value) {
+            if (value === 0) return '0 ₽';
+            const absValue = Math.abs(value);
+            const isMobile = window.innerWidth <= 600;
+            if (absValue >= 1000000000) {
+                return (value / 1000000000).toFixed(1).replace(/\.0$/, '') + (isMobile ? ' млрд' : ' млрд ₽');
+            }
+            if (absValue >= 1000000) {
+                return (value / 1000000).toFixed(1).replace(/\.0$/, '') + (isMobile ? ' млн' : ' млн ₽');
+            }
+            if (absValue >= 1000) {
+                return (value / 1000).toFixed(0) + (isMobile ? ' тыс.' : ' тыс. ₽');
+            }
+            return value.toFixed(0) + (isMobile ? '' : ' ₽');
+        }
+        function pluralizeYears(years) {
+            if (years % 10 === 1 && years % 100 !== 11) return 'год';
+            if ([2,3,4].includes(years % 10) && ![12,13,14].includes(years % 100)) return 'года';
+            return 'лет';
+        }
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+        function calculateFinancialPlan() {
+            const savedData = localStorage.getItem('financialPlannerData');
+            if (!savedData) return;
+            const data = JSON.parse(savedData);
+            // Получаем выбранный сценарий из селектора
+            const scenario = document.getElementById('scenario').value;
+            // ---
+            const scenarioObj = SCENARIOS[scenario];
+            // ---
+            const age = parseInt(data.age) || 0;
+            const retirementAge = parseInt(data.retirementAge) || 0;
+            const currentSavings = getNumberFromFormattedString(data.currentSavings);
+            const monthlySavings = getNumberFromFormattedString(data.monthlySavings);
+            const desiredRetirementIncome = getNumberFromFormattedString(data.desiredRetirementIncome);
+            const lifeExpectancy = parseInt(data.lifeExpectancy) || 80;
+            const returnRate = scenarioObj.returnRate;
+            const inflationRate = scenarioObj.inflationRate;
+            const yearsToRetirement = retirementAge - age;
+            const yearsInRetirement = lifeExpectancy - retirementAge;
+            // ---
+            function calculateRequiredAmount() {
+                const inflationAdjustedIncome = desiredRetirementIncome * Math.pow(1 + inflationRate, yearsToRetirement);
+                const realReturn = (1 + RETIREMENT_RETURN) / (1 + inflationRate) - 1;
+                if (Math.abs(realReturn) < 0.0001) {
+                    return inflationAdjustedIncome * 12 * yearsInRetirement;
+                } else {
+                    return (inflationAdjustedIncome * 12) * (1 - Math.pow(1 + realReturn, -yearsInRetirement)) / realReturn;
+                }
+            }
+            function calculateProjectedAmounts() {
+                const labels = [];
+                const projectedData = [];
+                const requiredData = [];
+                const contributionsData = [];
+                let currentAmount = currentSavings;
+                const monthlyReturn = Math.pow(1 + returnRate, 1/12) - 1;
+                const retirementMonthlyReturn = Math.pow(1 + RETIREMENT_RETURN, 1/12) - 1;
+                let indexedMonthlySavings = monthlySavings;
+
+                // Этап накопления
+                for (let year = 0; year <= yearsToRetirement; year++) {
+                    labels.push(`Год ${year}`);
+                    projectedData.push(Math.max(0, currentAmount));
+                    // Целевая линия
+                    const requiredAmount = calculateRequiredAmount();
+                    requiredData.push(requiredAmount * (year / yearsToRetirement));
+                    contributionsData.push(indexedMonthlySavings * 12);
+                    for (let month = 0; month < 12; month++) {
+                        currentAmount = (currentAmount + indexedMonthlySavings) * (1 + monthlyReturn);
+                    }
+                    indexedMonthlySavings *= (1 + inflationRate);
+                }
+                const retirementAmount = currentAmount;
+
+                // Этап пенсии (расходование)
+                let targetAmount = calculateRequiredAmount();
+                let monthlySpending = desiredRetirementIncome * Math.pow(1 + inflationRate, yearsToRetirement);
+                for (let year = 1; year <= yearsInRetirement; year++) {
+                    labels.push(`Пенсия ${year}`);
+                    for (let month = 0; month < 12; month++) {
+                        currentAmount = (currentAmount - monthlySpending) * (1 + retirementMonthlyReturn);
+                        targetAmount = (targetAmount - monthlySpending) * (1 + retirementMonthlyReturn);
+                    }
+                    projectedData.push(Math.max(0, currentAmount));
+                    requiredData.push(Math.max(0, targetAmount));
+                    contributionsData.push(0); // На пенсии пополнений нет
+                    monthlySpending *= (1 + inflationRate);
+                }
+                return { labels, projectedData, requiredData, contributionsData, retirementAmount };
+            }
+            function calculateRecommendedSavings(requiredAmount, yearsToRetirement) {
+                // Считаем реальную доходность (с учётом инфляции)
+                const realReturn = (1 + returnRate) / (1 + inflationRate) - 1;
+                // Рассчитываем реальную стоимость целевой суммы (в текущих деньгах)
+                const realRequiredAmount = requiredAmount / Math.pow(1 + inflationRate, yearsToRetirement);
+                // Рассчитываем месячную реальную доходность
+                const realMonthlyReturn = Math.pow(1 + realReturn, 1/12) - 1;
+                const monthsToRetirement = yearsToRetirement * 12;
+                
+                // Рассчитываем коэффициент будущей стоимости с реальной доходностью
+                const realFutureValueFactor = Math.pow(1 + realMonthlyReturn, monthsToRetirement);
+                
+                // Рассчитываем необходимый ежемесячный взнос в реальных величинах
+                const realRecommendedSavings = (realRequiredAmount - currentSavings * realFutureValueFactor) / 
+                    ((realFutureValueFactor - 1) / realMonthlyReturn);
+                
+                // Возвращаем рекомендуемые сбережения (уже в номинальном выражении, без необходимости индексации)
+                return realRecommendedSavings;
+            }
+            // ---
+            const requiredAmount = calculateRequiredAmount();
+            const projectionResults = calculateProjectedAmounts();
+            const recommendedSavings = calculateRecommendedSavings(requiredAmount, yearsToRetirement);
+            // ---
+            const presentValueRequired = requiredAmount / Math.pow(1 + inflationRate, yearsToRetirement);
+            const presentValueProjected = projectionResults.retirementAmount / Math.pow(1 + inflationRate, yearsToRetirement);
+            document.getElementById('required-amount').innerHTML = `
+                <div class="result-value-container">
+                    <div class="result-value">${formatCurrency(requiredAmount)}</div>
+                    <div class="present-value-note">
+                        (${formatCurrency(presentValueRequired)} в текущих деньгах)
+                    </div>
+                </div>
+                <div class="result-explanation">
+                    Сумма денег, которая потребуется к моменту выхода на пенсию, чтобы хватило на запланированный ежемесячный доход на протяжении всей пенсии. Это целевой размер вашего капитала к началу пенсии.
+                </div>
+            `;
+            document.getElementById('projected-amount').innerHTML = `
+                <div class="result-value-container">
+                    <div class="result-value">${formatCurrency(projectionResults.retirementAmount)}</div>
+                    <div class="present-value-note">
+                        (${formatCurrency(presentValueProjected)} в текущих деньгах)
+                    </div>
+                </div>
+                <div class="result-explanation">
+                    Ожидаемый размер ваших накоплений к моменту выхода на пенсию при текущем финансовом плане. Это сколько денег вы сможете накопить к пенсии, исходя из ваших текущих сбережений, ежемесячных отчислений и выбранной стратегии инвестиций.
+                </div>
+            `;
+            document.getElementById('recommended-savings').innerHTML = `
+                <div class="result-value">${formatCurrency(Math.max(0, recommendedSavings))}</div>
+                <div class="result-explanation">
+                    Расчетная сумма, которую вам необходимо откладывать каждый месяц для достижения необходимой суммы к пенсии. Если вы будете инвестировать примерно столько ежемесячно, к пенсии накопится достаточная сумма.
+                </div>
+            `;
+            let monthlyGap, gapExplanation;
+            if (projectionResults.retirementAmount >= requiredAmount) {
+                monthlyGap = monthlySavings - recommendedSavings;
+                if (monthlyGap < 0) monthlyGap = 0;
+                gapExplanation = 'Ваши прогнозируемые накопления превышают необходимую сумму к пенсии. Вы на правильном пути!';
+            } else {
+                monthlyGap = monthlySavings - recommendedSavings;
+                gapExplanation = monthlyGap < 0
+                    ? 'Отрицательное значение означает, что вы откладываете меньше требуемого и не достигнете цели.'
+                    : 'Положительное значение означает, что вы откладываете больше, чем необходимо для достижения цели.';
+            }
+            document.getElementById('monthly-gap').innerHTML = `                <div class="result-value">${formatCurrency(monthlyGap)}</div>
+                <div class="result-explanation">
+                    Разница между вашим текущим размером ежемесячных сбережений и рекомендованной суммой. ${gapExplanation}
+                </div>
+            `;
+            // --- График ---
+            const ctx = document.getElementById('chart').getContext('2d');
+            if (window.financialChart) window.financialChart.destroy();
+            window.financialChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: projectionResults.labels,
+                    datasets: [
+                        {
+                            label: 'Прогнозируемые накопления',
+                            data: projectionResults.projectedData,
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Целевые накопления',
+                            data: projectionResults.requiredData,
+                            borderColor: '#e53e3e',
+                            backgroundColor: 'rgba(229, 62, 62, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.dataset.label + ': ' + formatCurrencyShort(context.parsed.y);
+                                    if (context.datasetIndex === 0) {
+                                        const index = context.dataIndex;
+                                        const contributionValue = projectionResults.contributionsData[index];
+                                        return [label, 'Прогнозируемые пополнения: ' + formatCurrencyShort(contributionValue)];
+                                    }
+                                    return label;
+                                }
+                            }
+                        },
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return formatCurrencyShort(value);
+                                },
+                                font: function(context) {
+                                    return window.innerWidth <= 600 ? { size: 10 } : { size: 13 };
+                                }
+                            },
+                            grid: {
+                                borderDash: [6, 6],
+                                color: 'rgba(13,63,74,0.2)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        document.getElementById('scenario').addEventListener('change', calculateFinancialPlan);
+        document.addEventListener('DOMContentLoaded', function() {
+            // Восстановить выбранный сценарий из localStorage
+            const savedData = localStorage.getItem('financialPlannerData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                if (data.scenario) {
+                    document.getElementById('scenario').value = data.scenario;
+                }
+            }
+            calculateFinancialPlan();
+            generateRecommendations();
+            updateScenarioDesc();
+        });
+
+        function toggleMenu() {
+            var menu = document.getElementById('dropdownMenu');
+            menu.classList.toggle('show');
+        }
+        // Описание сценариев
+        const scenarioDescriptions = {
+            optimistic: 'Оптимистичный сценарий: доходность 15%, инфляция 7%. Подразумевает высокий рост инвестиций и умеренную инфляцию.',
+            moderate: 'Реалистичный сценарий: доходность 13.5%, инфляция 8%. Сбалансированный вариант для долгосрочного планирования.',
+            pessimistic: 'Пессимистичный сценарий: доходность 8%, инфляция 10%. Консервативный подход с учетом возможных рисков.',
+        };
+        function updateScenarioDesc() {
+            var sel = document.getElementById('scenario');
+            var desc = document.getElementById('scenario-desc');
+            desc.textContent = scenarioDescriptions[sel.value];
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            updateScenarioDesc();
+            document.getElementById('scenario').addEventListener('change', updateScenarioDesc);
+        });
+
+        function generateRecommendations() {
+            const savedData = localStorage.getItem('financialPlannerData');
+            if (!savedData) return;
+            
+            const data = JSON.parse(savedData);
+            const scenario = document.getElementById('scenario').value;
+            const scenarioObj = SCENARIOS[scenario];
+            
+            const age = parseInt(data.age) || 0;
+            const retirementAge = parseInt(data.retirementAge) || 0;
+            const currentSavings = getNumberFromFormattedString(data.currentSavings);
+            const monthlySavings = getNumberFromFormattedString(data.monthlySavings);
+            const desiredRetirementIncome = getNumberFromFormattedString(data.desiredRetirementIncome);
+            const lifeExpectancy = parseInt(data.lifeExpectancy) || 80;
+            
+            const yearsToRetirement = retirementAge - age;
+            const yearsInRetirement = lifeExpectancy - retirementAge;
+            
+            // Получаем текущие расчетные значения
+            const requiredAmountElement = document.getElementById('required-amount');
+            const projectedAmountElement = document.getElementById('projected-amount');
+            const recommendedSavingsElement = document.getElementById('recommended-savings');
+            const monthlyGapElement = document.getElementById('monthly-gap');
+            
+            // Преобразование текстовых значений в числа для сравнения
+            const requiredAmountValue = getNumberFromFormattedString(requiredAmountElement.innerText);
+            const projectedAmountValue = getNumberFromFormattedString(projectedAmountElement.innerText);
+            const recommendedSavingsValue = getNumberFromFormattedString(recommendedSavingsElement.innerText);
+            const monthlyGapValue = getNumberFromFormattedString(monthlyGapElement.innerText);
+            
+            // Соотношение рекомендуемых и текущих сбережений
+            const savingsGapPercent = monthlyGapValue ? (monthlyGapValue / (recommendedSavingsValue + monthlyGapValue)) * 100 : 0;
+            
+            const recommendations = [];
+            
+            // Определяем, есть ли дефицит или профицит
+            // Проверяем как ежемесячный дефицит, так и общий результат накоплений
+            const hasInsufficientFunds = projectedAmountValue < requiredAmountValue;
+            const hasDeficit = hasInsufficientFunds || monthlyGapValue < 0;
+            
+            if (hasDeficit) {
+                // Рекомендации при дефиците средств
+                recommendations.push({
+                    title: '💸 Увеличьте ежемесячные инвестиции',
+                    text: `Чтобы достичь желаемого пенсионного дохода в ${formatCurrency(desiredRetirementIncome)} в месяц, рекомендуется увеличить ежемесячные инвестиции ${monthlyGapValue < 0 ? `на ${formatCurrency(Math.abs(monthlyGapValue))}` : ''}. ${hasInsufficientFunds ? 'По текущему плану ваших накоплений не хватит для желаемого дохода на пенсии.' : ''}`
+                });
+                
+                recommendations.push({
+                    title: '💰 Откройте ИИС (индивидуальный инвестиционный счёт)',
+                    text: 'Этот инструмент дает налоговый вычет 13% на взносы до 400 тыс. ₽ в год (максимум 52 тыс. ₽ возврата ежегодно). Таким образом, часть инвестиций вам фактически вернется от государства, что повысит общий шанс достижения цели.'
+                });
+                
+                recommendations.push({
+                    title: '📉 Оптимизируйте расходы и бюджет',
+                    text: 'Проанализируйте текущие траты: возможно, есть статьи расходов, которые можно сократить, а сэкономленные деньги направить в инвестиции. Сокращение дискреционных расходов и перенаправление этих средств на пенсионные накопления заметно улучшит ваши перспективы.'
+                });
+                
+                // Если большой дефицит, предложим отложить пенсию
+                if (savingsGapPercent < -20) {
+                    recommendations.push({
+                        title: '⏳ Рассмотрите возможность более позднего выхода на пенсию',
+                        text: 'Увеличение горизонта накопления (например, выход на пенсию не в ' + retirementAge + ', а в ' + (retirementAge + 3) + '-' + (retirementAge + 5) + ' лет) позволит дольше пополнять пенсионный капитал и уменьшит период, в течение которого средства нужны на пенсии.'
+                    });
+                }
+                
+                // Если очень большой дефицит, предложим скорректировать цель
+                if (savingsGapPercent < -40) {
+                    recommendations.push({
+                        title: '🎯 Скорректируйте вашу финансовую цель',
+                        text: `Целевой доход ${formatCurrency(desiredRetirementIncome)} в месяц может быть труднодостижим при текущих условиях. Рассмотрите возможность немного снизить желаемый пенсионный доход или предусмотреть более короткий период выплат. Это уменьшит необходимую сумму к накоплению.`
+                    });
+                }
+                
+                // Для молодых инвесторов можно предложить более агрессивную стратегию
+                if (age < 40 && yearsToRetirement > 20) {
+                    recommendations.push({
+                        title: '📈 Рассмотрите повышение доходности инвестиций',
+                        text: 'Учитывая ваш долгосрочный инвестиционный горизонт, вы можете рассмотреть более агрессивную инвестиционную стратегию для потенциального повышения доходности. Однако важно учесть, что это также повышает риски. Проконсультируйтесь с финансовым советником для выбора оптимальной стратегии.'
+                    });
+                }
+            } else {
+                // Рекомендации при профиците средств
+                recommendations.push({
+                    title: '👍 Вы на правильном пути!',
+                    text: `Ваш текущий план превышает необходимый уровень на ${formatCurrency(monthlyGapValue)} в месяц – вы на пути к достижению цели раньше времени или с запасом.`
+                });
+                
+                if (monthlyGapValue > recommendedSavingsValue * 0.2) {
+                    recommendations.push({
+                        title: '🏝️ Рассмотрите более ранний выход на пенсию',
+                        text: `У вас есть возможность выйти на пенсию раньше запланированного срока (${retirementAge} лет) или поставить более амбициозную цель по пенсионному доходу, поскольку ваш текущий уровень сбережений опережает план.`
+                    });
+                }
+                
+                if (yearsToRetirement < 10) {
+                    recommendations.push({
+                        title: '🔄 Оптимизируйте инвестиционную стратегию',
+                        text: 'Поскольку вы близки к достижению своей цели, рассмотрите возможность перевода части активов в более консервативные инструменты для защиты накопленного капитала от рыночных колебаний.'
+                    });
+                }
+            }
+            
+            // Добавляем рекомендации в зависимости от других условий
+            
+            // Универсальные рекомендации (добавляются всегда)
+            recommendations.push({
+                title: '📈 Диверсификация инвестиций',
+                text: 'Разделите ваши инвестиции между разными классами активов: акции (60-70%), облигации (20-30%), альтернативные инвестиции (5-10%). Это снизит общий риск и повысит устойчивость вашего портфеля к рыночным колебаниям. Для составления оптимального портфеля лучше всего проконсультироваться с финансовым советником.'
+            });
+            
+            // Рекомендация по финансовой подушке
+            const monthlyExpensesValue = getNumberFromFormattedString(data.monthlyExpenses) || recommendedSavingsValue;
+            recommendations.push({
+                title: '🛡️ Создайте финансовую подушку',
+                text: `Сформируйте резервный фонд в размере ${formatCurrency(monthlyExpensesValue * 6)} (ваших расходов за 6 месяцев). Это обеспечит вам защиту при непредвиденных обстоятельствах и позволит не прерывать инвестиционный план.`
+            });
+            
+            // Налоговые льготы
+            recommendations.push({
+                title: '💼 Используйте налоговые льготы',
+                text: `Максимально используйте инструменты с налоговыми преимуществами, такие как ИИС. При ваших ежемесячных отчислениях ${formatCurrency(monthlySavings)} это даст дополнительно ${formatCurrency(monthlySavings * 12 * 0.13)} в год за счет налогового вычета.`
+            });
+            
+            // Начать раньше
+            recommendations.push({
+                title: '⏰ Начните раньше - получите больше',
+                text: `Увеличение инвестиционного горизонта всего на 5 лет может увеличить итоговую сумму на ~40%. Рассмотрите возможность увеличения накоплений сейчас для достижения финансовой независимости к ${retirementAge - 3} годам.`
+            });
+            
+            // Ипотечная нагрузка
+            const returnRateValue = scenarioObj.returnRate * 100;
+            recommendations.push({
+                title: '🏠 Оптимизация ипотечной нагрузки',
+                text: `Если у вас есть ипотека, сравните её ставку с потенциальной доходностью инвестиций. При ставке ниже ${returnRateValue - 2}% может быть выгоднее инвестировать свободные средства, а не досрочно погашать кредит.`
+            });
+            
+            // Страхование
+            const monthlyIncomeValue = getNumberFromFormattedString(data.monthlyIncome) || monthlySavings * 2;
+            recommendations.push({
+                title: '🏥 Страхование жизни и здоровья',
+                text: `Защитите свой финансовый план с помощью страхования жизни и здоровья. При вашем ежемесячном доходе ${formatCurrency(monthlyIncomeValue)} и обязательствах стоит рассмотреть страховку с покрытием ${formatCurrency(monthlyIncomeValue * 60)}.`
+            });
+            
+            // Балансировка риска
+            recommendations.push({
+                title: '⚖️ Балансируйте риск и доходность',
+                text: `При вашем инвестиционном горизонте ${yearsToRetirement} лет оптимальное соотношение акций/облигаций составляет ${100 - age}/${age}. Это позволит получить ожидаемую доходность ${returnRateValue}% при умеренном риске.`
+            });
+            
+            // Оптимизация расходов
+            recommendations.push({
+                title: '🛒 Оптимизация расходов',
+                text: `Сократив необязательные расходы на 10% (примерно ${formatCurrency(monthlyExpensesValue * 0.1)}), вы сможете увеличить ежемесячные инвестиции. За ${yearsToRetirement} лет это даст дополнительно ${formatCurrency(monthlyExpensesValue * 0.1 * 12 * yearsToRetirement * Math.pow(1 + scenarioObj.returnRate, yearsToRetirement/2))}.`
+            });
+            
+            // Планирование наследства
+            if (age > 45 || yearsToRetirement < 20) {
+                recommendations.push({
+                    title: '🧓 Планирование наследства',
+                    text: `При достижении финансовой цели в ${formatCurrency(requiredAmountValue)}, подумайте о планировании наследства и передаче активов. Правильное структурирование поможет минимизировать налоги и обеспечить исполнение ваших пожеланий.`
+                });
+            }
+            
+            // Отображаем рекомендации
+            const recommendationsContainer = document.getElementById('recommendations-container');
+            if (recommendations.length > 0) {
+                let recommendationsHTML = '';
+                
+                // Выбираем максимум 4 рекомендации, чтобы не перегружать страницу
+                const displayRecommendations = recommendations.slice(0, 6);
+                
+                displayRecommendations.forEach(rec => {
+                    recommendationsHTML += `
+                        <div class="recommendation-item">
+                            <span class="recommendation-title">${rec.title}</span>
+                            <div class="recommendation-text">${rec.text}</div>
+                        </div>
+                    `;
+                });
+                
+                recommendationsContainer.innerHTML = recommendationsHTML;
+            } else {
+                recommendationsContainer.innerHTML = '<div class="recommendation-item"><p>Недостаточно данных для формирования рекомендаций.</p></div>';
+            }
+        }
+
+        document.getElementById('scenario').addEventListener('change', function() {
+            calculateFinancialPlan();
+            generateRecommendations();
+        });
+    </script>
+    <script src="js/header.js"></script>
+</body>
+</html> 
