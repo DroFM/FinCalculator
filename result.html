@@ -404,8 +404,8 @@
         <div class="overview-title">Обзор</div>
         <div class="chart-scenario-block">
             <div class="gauge-info-block" style="margin-bottom: 1rem;">
-                <div id="gauge-title" class="gauge-title" style="font-size: 1.25rem; font-weight: 600; color: rgb(13, 63, 74); margin-bottom: 0.3rem;"></div>
-                <div id="gauge-desc" class="gauge-desc" style="font-size: 1rem; color: #475569;"></div>
+                <div class="gauge-title" style="font-size: 1.25rem; font-weight: 600; color: rgb(13, 63, 74); margin-bottom: 0.3rem;">Цель достижима</div>
+                <div class="gauge-desc" style="font-size: 1rem; color: #475569;">У вас получится профинансировать свою пенсию с заданными параметрами.</div>
             </div>
             <div class="chart-container">
                 <canvas id="chart"></canvas>
@@ -624,25 +624,32 @@
                 monthlyGap = monthlySavings - recommendedSavings;
                 if (monthlyGap < 0) monthlyGap = 0;
                 gapExplanation = 'Ваши прогнозируемые накопления превышают необходимую сумму к пенсии. Вы на правильном пути!';
-                
-                // Обновляем информацию о достижимости цели
-                document.getElementById('gauge-title').textContent = 'Цель достижима';
-                document.getElementById('gauge-desc').textContent = 'У вас получится профинансировать свою пенсию с заданными параметрами.';
             } else {
                 monthlyGap = monthlySavings - recommendedSavings;
                 gapExplanation = monthlyGap < 0
                     ? 'Отрицательное значение означает, что вы откладываете меньше требуемого и не достигнете цели.'
                     : 'Положительное значение означает, что вы откладываете больше, чем необходимо для достижения цели.';
-                
-                // Обновляем информацию о достижимости цели
-                document.getElementById('gauge-title').textContent = 'Цель не достижима';
-                document.getElementById('gauge-desc').textContent = 'С текущими параметрами вам не хватит средств для достижения поставленной цели.';
             }
             document.getElementById('monthly-gap').innerHTML = `                <div class="result-value">${formatCurrency(monthlyGap)}</div>
                 <div class="result-explanation">
                     Разница между вашим текущим размером ежемесячных сбережений и рекомендованной суммой. ${gapExplanation}
                 </div>
             `;
+            
+            // Обновляем заголовок и описание в блоке с индикатором достижимости
+            const gaugeTitle = document.querySelector('.gauge-title');
+            const gaugeDesc = document.querySelector('.gauge-desc');
+            
+            if (projectionResults.retirementAmount >= requiredAmount) {
+                gaugeTitle.textContent = 'Цель достижима';
+                gaugeDesc.textContent = 'У вас получится профинансировать свою пенсию с заданными параметрами.';
+                gaugeTitle.style.color = 'rgb(16, 185, 129)'; // Зеленый цвет для положительного результата
+            } else {
+                gaugeTitle.textContent = 'Цель не достижима';
+                gaugeDesc.textContent = 'При текущих параметрах вам не хватит средств для достижения пенсионной цели.';
+                gaugeTitle.style.color = 'rgb(239, 68, 68)'; // Красный цвет для отрицательного результата
+            }
+            
             // --- График ---
             const ctx = document.getElementById('chart').getContext('2d');
             if (window.financialChart) window.financialChart.destroy();

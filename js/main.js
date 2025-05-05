@@ -318,7 +318,7 @@ function setupSavingsCalculation() {
                 inputMonthlySavings.value = savings.toLocaleString('ru-RU');
                 inputMonthlySavings.disabled = true;
             } else {
-                inputMonthlySavings.value = '';
+                inputMonthlySavings.value = '0';
                 inputMonthlySavings.disabled = true;
             }
         } else {
@@ -456,18 +456,6 @@ function updateResults(data, requiredAmount, projectionResults, recommendedSavin
     const presentValueProjected = projectionResults.retirementAmount / 
         Math.pow(1 + data.inflationRate, yearsToRetirement);
 
-    // Обновляем блок с информацией о достижимости цели
-    const gaugeTitle = document.getElementById('gauge-title');
-    const gaugeDesc = document.getElementById('gauge-desc');
-    
-    if (projectionResults.retirementAmount >= requiredAmount) {
-        gaugeTitle.textContent = 'Цель достижима';
-        gaugeDesc.textContent = 'У вас получится профинансировать свою пенсию с заданными параметрами.';
-    } else {
-        gaugeTitle.textContent = 'Цель не достижима';
-        gaugeDesc.textContent = 'С текущими параметрами вам не хватит средств для достижения поставленной цели.';
-    }
-
     // Обновляем значения с пояснениями
     document.getElementById('required-amount').innerHTML = `
         <div class="result-value-container">
@@ -518,6 +506,22 @@ function updateResults(data, requiredAmount, projectionResults, recommendedSavin
             Разница между вашим текущим размером ежемесячных сбережений и рекомендованной суммой. ${gapExplanation}
         </div>
     `;
+    
+    // Обновляем заголовок и описание в блоке с индикатором достижимости
+    const gaugeTitle = document.querySelector('.gauge-title');
+    const gaugeDesc = document.querySelector('.gauge-desc');
+    
+    if (gaugeTitle && gaugeDesc) {
+        if (projectionResults.retirementAmount >= requiredAmount) {
+            gaugeTitle.textContent = 'Цель достижима';
+            gaugeDesc.textContent = 'У вас получится профинансировать свою пенсию с заданными параметрами.';
+            gaugeTitle.style.color = 'rgb(16, 185, 129)'; // Зеленый цвет для положительного результата
+        } else {
+            gaugeTitle.textContent = 'Цель не достижима';
+            gaugeDesc.textContent = 'При текущих параметрах вам не хватит средств для достижения пенсионной цели.';
+            gaugeTitle.style.color = 'rgb(239, 68, 68)'; // Красный цвет для отрицательного результата
+        }
+    }
 }
 
 // Функция для обновления графика
@@ -634,67 +638,17 @@ function loadDataFromLocalStorage() {
     
     if (data.age) document.getElementById('age').value = data.age;
     if (data.retirementAge) document.getElementById('retirement-age').value = data.retirementAge;
-    
-    // Форматируем денежные значения
-    if (data.currentSavings) {
-        const value = getNumberFromFormattedString(data.currentSavings);
-        document.getElementById('current-savings').value = value.toLocaleString('ru-RU');
-    }
-    if (data.monthlyIncome) {
-        const value = getNumberFromFormattedString(data.monthlyIncome);
-        document.getElementById('monthly-income').value = value.toLocaleString('ru-RU');
-    }
-    if (data.monthlyExpenses) {
-        const value = getNumberFromFormattedString(data.monthlyExpenses);
-        document.getElementById('monthly-expenses').value = value.toLocaleString('ru-RU');
-    }
-    
-    // Настраиваем автоматический расчет месячных накоплений
-    if (data.autoCalculateSavings !== undefined) {
-        const autoCalculateCheckbox = document.getElementById('auto-calculate-savings');
-        autoCalculateCheckbox.checked = data.autoCalculateSavings;
-        
-        if (data.autoCalculateSavings) {
-            // Если автоматический расчет включен, вычисляем накопления на основе дохода и расходов
-            const income = getNumberFromFormattedString(document.getElementById('monthly-income').value);
-            const expenses = getNumberFromFormattedString(document.getElementById('monthly-expenses').value);
-            const savings = income - expenses;
-            
-            if (savings > 0) {
-                document.getElementById('monthly-savings').value = savings.toLocaleString('ru-RU');
-            } else {
-                document.getElementById('monthly-savings').value = '';
-            }
-            document.getElementById('monthly-savings').disabled = true;
-        } else {
-            // Иначе используем сохраненное значение
-            if (data.monthlySavings) {
-                const value = getNumberFromFormattedString(data.monthlySavings);
-                if (value > 0) {
-                    document.getElementById('monthly-savings').value = value.toLocaleString('ru-RU');
-                } else {
-                    document.getElementById('monthly-savings').value = '';
-                }
-            }
-            document.getElementById('monthly-savings').disabled = false;
-        }
-    } else if (data.monthlySavings) {
-        // Если нет информации о checkbox, но есть о накоплениях, загружаем их
-        const value = getNumberFromFormattedString(data.monthlySavings);
-        if (value > 0) {
-            document.getElementById('monthly-savings').value = value.toLocaleString('ru-RU');
-        } else {
-            document.getElementById('monthly-savings').value = '';
-        }
-    }
-    
-    if (data.desiredRetirementIncome) {
-        const value = getNumberFromFormattedString(data.desiredRetirementIncome);
-        document.getElementById('desired-retirement-income').value = value.toLocaleString('ru-RU');
-    }
-    
+    if (data.currentSavings) document.getElementById('current-savings').value = data.currentSavings;
+    if (data.monthlyIncome) document.getElementById('monthly-income').value = data.monthlyIncome;
+    if (data.monthlyExpenses) document.getElementById('monthly-expenses').value = data.monthlyExpenses;
+    if (data.monthlySavings) document.getElementById('monthly-savings').value = data.monthlySavings;
+    if (data.desiredRetirementIncome) document.getElementById('desired-retirement-income').value = data.desiredRetirementIncome;
     if (data.lifeExpectancy) document.getElementById('life-expectancy').value = data.lifeExpectancy;
     if (data.scenario) document.getElementById('scenario').value = data.scenario;
+    if (data.autoCalculateSavings !== undefined) {
+        document.getElementById('auto-calculate-savings').checked = data.autoCalculateSavings;
+        document.getElementById('monthly-savings').disabled = data.autoCalculateSavings;
+    }
     
     if (data.financialGoals && Array.isArray(data.financialGoals)) {
         financialGoals = data.financialGoals;
