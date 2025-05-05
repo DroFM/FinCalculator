@@ -318,7 +318,7 @@ function setupSavingsCalculation() {
                 inputMonthlySavings.value = savings.toLocaleString('ru-RU');
                 inputMonthlySavings.disabled = true;
             } else {
-                inputMonthlySavings.value = '0';
+                inputMonthlySavings.value = '';
                 inputMonthlySavings.disabled = true;
             }
         } else {
@@ -648,10 +648,46 @@ function loadDataFromLocalStorage() {
         const value = getNumberFromFormattedString(data.monthlyExpenses);
         document.getElementById('monthly-expenses').value = value.toLocaleString('ru-RU');
     }
-    if (data.monthlySavings) {
+    
+    // Настраиваем автоматический расчет месячных накоплений
+    if (data.autoCalculateSavings !== undefined) {
+        const autoCalculateCheckbox = document.getElementById('auto-calculate-savings');
+        autoCalculateCheckbox.checked = data.autoCalculateSavings;
+        
+        if (data.autoCalculateSavings) {
+            // Если автоматический расчет включен, вычисляем накопления на основе дохода и расходов
+            const income = getNumberFromFormattedString(document.getElementById('monthly-income').value);
+            const expenses = getNumberFromFormattedString(document.getElementById('monthly-expenses').value);
+            const savings = income - expenses;
+            
+            if (savings > 0) {
+                document.getElementById('monthly-savings').value = savings.toLocaleString('ru-RU');
+            } else {
+                document.getElementById('monthly-savings').value = '';
+            }
+            document.getElementById('monthly-savings').disabled = true;
+        } else {
+            // Иначе используем сохраненное значение
+            if (data.monthlySavings) {
+                const value = getNumberFromFormattedString(data.monthlySavings);
+                if (value > 0) {
+                    document.getElementById('monthly-savings').value = value.toLocaleString('ru-RU');
+                } else {
+                    document.getElementById('monthly-savings').value = '';
+                }
+            }
+            document.getElementById('monthly-savings').disabled = false;
+        }
+    } else if (data.monthlySavings) {
+        // Если нет информации о checkbox, но есть о накоплениях, загружаем их
         const value = getNumberFromFormattedString(data.monthlySavings);
-        document.getElementById('monthly-savings').value = value.toLocaleString('ru-RU');
+        if (value > 0) {
+            document.getElementById('monthly-savings').value = value.toLocaleString('ru-RU');
+        } else {
+            document.getElementById('monthly-savings').value = '';
+        }
     }
+    
     if (data.desiredRetirementIncome) {
         const value = getNumberFromFormattedString(data.desiredRetirementIncome);
         document.getElementById('desired-retirement-income').value = value.toLocaleString('ru-RU');
@@ -659,10 +695,6 @@ function loadDataFromLocalStorage() {
     
     if (data.lifeExpectancy) document.getElementById('life-expectancy').value = data.lifeExpectancy;
     if (data.scenario) document.getElementById('scenario').value = data.scenario;
-    if (data.autoCalculateSavings !== undefined) {
-        document.getElementById('auto-calculate-savings').checked = data.autoCalculateSavings;
-        document.getElementById('monthly-savings').disabled = data.autoCalculateSavings;
-    }
     
     if (data.financialGoals && Array.isArray(data.financialGoals)) {
         financialGoals = data.financialGoals;
