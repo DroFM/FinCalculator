@@ -456,6 +456,18 @@ function updateResults(data, requiredAmount, projectionResults, recommendedSavin
     const presentValueProjected = projectionResults.retirementAmount / 
         Math.pow(1 + data.inflationRate, yearsToRetirement);
 
+    // Обновляем блок с информацией о достижимости цели
+    const gaugeTitle = document.getElementById('gauge-title');
+    const gaugeDesc = document.getElementById('gauge-desc');
+    
+    if (projectionResults.retirementAmount >= requiredAmount) {
+        gaugeTitle.textContent = 'Цель достижима';
+        gaugeDesc.textContent = 'У вас получится профинансировать свою пенсию с заданными параметрами.';
+    } else {
+        gaugeTitle.textContent = 'Цель не достижима';
+        gaugeDesc.textContent = 'С текущими параметрами вам не хватит средств для достижения поставленной цели.';
+    }
+
     // Обновляем значения с пояснениями
     document.getElementById('required-amount').innerHTML = `
         <div class="result-value-container">
@@ -622,11 +634,29 @@ function loadDataFromLocalStorage() {
     
     if (data.age) document.getElementById('age').value = data.age;
     if (data.retirementAge) document.getElementById('retirement-age').value = data.retirementAge;
-    if (data.currentSavings) document.getElementById('current-savings').value = data.currentSavings;
-    if (data.monthlyIncome) document.getElementById('monthly-income').value = data.monthlyIncome;
-    if (data.monthlyExpenses) document.getElementById('monthly-expenses').value = data.monthlyExpenses;
-    if (data.monthlySavings) document.getElementById('monthly-savings').value = data.monthlySavings;
-    if (data.desiredRetirementIncome) document.getElementById('desired-retirement-income').value = data.desiredRetirementIncome;
+    
+    // Форматируем денежные значения
+    if (data.currentSavings) {
+        const value = getNumberFromFormattedString(data.currentSavings);
+        document.getElementById('current-savings').value = value.toLocaleString('ru-RU');
+    }
+    if (data.monthlyIncome) {
+        const value = getNumberFromFormattedString(data.monthlyIncome);
+        document.getElementById('monthly-income').value = value.toLocaleString('ru-RU');
+    }
+    if (data.monthlyExpenses) {
+        const value = getNumberFromFormattedString(data.monthlyExpenses);
+        document.getElementById('monthly-expenses').value = value.toLocaleString('ru-RU');
+    }
+    if (data.monthlySavings) {
+        const value = getNumberFromFormattedString(data.monthlySavings);
+        document.getElementById('monthly-savings').value = value.toLocaleString('ru-RU');
+    }
+    if (data.desiredRetirementIncome) {
+        const value = getNumberFromFormattedString(data.desiredRetirementIncome);
+        document.getElementById('desired-retirement-income').value = value.toLocaleString('ru-RU');
+    }
+    
     if (data.lifeExpectancy) document.getElementById('life-expectancy').value = data.lifeExpectancy;
     if (data.scenario) document.getElementById('scenario').value = data.scenario;
     if (data.autoCalculateSavings !== undefined) {
